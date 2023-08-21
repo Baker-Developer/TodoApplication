@@ -7,24 +7,28 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TodoApplication.Data;
 using TodoApplication.Models;
+using TodoApplication.Services;
+using TodoApplication.Services.Interfaces;
 
 namespace TodoApplication.Controllers
 {
     public class TodoController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ITodoService _todoService;
 
-        public TodoController(ApplicationDbContext context)
+        public TodoController(ApplicationDbContext context, ITodoService todoService)
         {
             _context = context;
+            _todoService = todoService;
         }
 
         // GET: Todo
         public async Task<IActionResult> Index()
         {
-              return _context.Todo != null ? 
-                          View(await _context.Todo.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Todo'  is null.");
+            return _context.Todo != null ?
+                        View(await _context.Todo.ToListAsync()) :
+                        Problem("Entity set 'ApplicationDbContext.Todo'  is null.");
         }
 
         // GET: Todo/Details/5
@@ -60,8 +64,7 @@ namespace TodoApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(todo);
-                await _context.SaveChangesAsync();
+                await _todoService.AddNewTodoAsync(todo);
                 return RedirectToAction(nameof(Index));
             }
             return View(todo);
@@ -118,6 +121,47 @@ namespace TodoApplication.Controllers
             return View(todo);
         }
 
+
+        // GET: Todo/Archive/5
+        public async Task<IActionResult> Archive(int? id)
+        {
+            if (id == null || _context.Todo == null)
+            {
+                return NotFound();
+            }
+
+            var todo = await _context.Todo
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (todo == null)
+            {
+                return NotFound();
+            }
+
+            return View(todo);
+        }
+
+
+
+        // POST: Todo/Delete/5
+        [HttpPost, ActionName("Archive")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ArchiveConfirmed(int id)
+        {
+            if (_context.Todo == null)
+            {
+                return Problem("Entity set 'ApplicationDbContext.Todo'  is null.");
+            }
+            var todo = await _context.Todo.FindAsync(id);
+            if (todo != null)
+            {
+                await _todoService.DeleteNewTodoAsync(todo);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
         // GET: Todo/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -148,16 +192,15 @@ namespace TodoApplication.Controllers
             var todo = await _context.Todo.FindAsync(id);
             if (todo != null)
             {
-                _context.Todo.Remove(todo);
+                await _todoService.DeleteNewTodoAsync(todo);
             }
-            
-            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
         private bool TodoExists(int id)
         {
-          return (_context.Todo?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Todo?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
