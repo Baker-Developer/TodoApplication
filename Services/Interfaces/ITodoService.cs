@@ -7,7 +7,7 @@ namespace TodoApplication.Services.Interfaces
     public interface ITodoService
     {
         public Task AddNewTodoAsync(Todo todo);
-        public Task ArchiveNewTodoAsync(Todo todo);
+        public Task ArchiveTodoAsync(Todo todo);
         public Task DeleteNewTodoAsync(Todo todo);
     }
 }

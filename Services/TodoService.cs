@@ -16,19 +16,47 @@ namespace TodoApplication.Services
 
         public async Task AddNewTodoAsync(Todo todo)
         {
-            _context.Add(todo);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Add(todo);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+  
         }
 
-        public Task ArchiveNewTodoAsync(Todo todo)
+        public async Task ArchiveTodoAsync(Todo todo)
         {
-            throw new NotImplementedException();
+            try
+            {
+                todo.IsComplete = true;
+                _context.Update(todo);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task DeleteNewTodoAsync(Todo todo)
         {
-            _context.Todo.Remove(todo);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Todo.Remove(todo);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
         }
     }
 }

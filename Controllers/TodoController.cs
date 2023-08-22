@@ -152,10 +152,7 @@ namespace TodoApplication.Controllers
                 return Problem("Entity set 'ApplicationDbContext.Todo'  is null.");
             }
             var todo = await _context.Todo.FindAsync(id);
-            if (todo != null)
-            {
-                await _todoService.DeleteNewTodoAsync(todo);
-            }
+            await _todoService.ArchiveTodoAsync(todo);
 
             return RedirectToAction(nameof(Index));
         }
