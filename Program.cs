@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using TodoApplication.Data;
+using TodoApplication.Services;
+using TodoApplication.Services.Interfaces;
 
 namespace TodoApplication
 {
@@ -20,6 +23,8 @@ namespace TodoApplication
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<ITodoService, TodoService>();
 
             var app = builder.Build();
 
