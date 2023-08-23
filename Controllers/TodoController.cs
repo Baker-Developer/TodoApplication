@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -55,20 +56,26 @@ namespace TodoApplication.Controllers
             return View();
         }
 
-        // POST: Todo/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Note,DeadLineDate,IsComplete")] Todo todo)
+        public async Task<JsonResult> Create([Bind("Title,Note,DeadLineDate,IsComplete")] Todo todo)
         {
             if (ModelState.IsValid)
             {
-                await _todoService.AddNewTodoAsync(todo);
-                return RedirectToAction(nameof(Index));
+                // Add new Todo logic
+                if (ModelState.IsValid)
+                {
+                    await _todoService.AddNewTodoAsync(todo);
+                }
+                // Assuming the Todo is added successfully
+                return Json(new { redirectTo = Url.Action("Index", "Todo") });
             }
-            return View(todo);
+
+            // If ModelState is not valid, return a JSON object with errors
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return Json(new { errors });
         }
+
 
         // GET: Todo/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -201,3 +208,4 @@ namespace TodoApplication.Controllers
         }
     }
 }
+
